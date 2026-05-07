@@ -9,12 +9,11 @@ const cache = new NodeCache({ stdTTL: 3600 }); // cache 1h
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// ── Health ──
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'streamflix-scraper', timestamp: new Date().toISOString() });
 });
 
-// ── GET /extract?type=movie|tv&imdb=tt...&tmdb=...&season=1&episode=1 ──
+// GET /extract?type=movie|tv&imdb=tt...&tmdb=...&season=1&episode=1
 app.get('/extract', async (req, res) => {
   const { type = 'movie', imdb, tmdb, season = '1', episode = '1' } = req.query;
 
@@ -30,11 +29,21 @@ app.get('/extract', async (req, res) => {
   }
 
   try {
-    console.log(`[EXTRACT] ${type} imdb=${imdb} tmdb=${tmdb} s${season}e${episode}`);
-    const result = await extractStream({ type, imdb, tmdb, season: parseInt(season), episode: parseInt(episode) });
+    console.log(`\n============================`);
+    console.log(`[REQUEST] ${type} imdb=${imdb} tmdb=${tmdb} s${season}e${episode}`);
+    console.log(`============================`);
+
+    const result = await extractStream({
+      type,
+      imdb,
+      tmdb,
+      season: parseInt(season),
+      episode: parseInt(episode),
+    });
 
     if (result.sources?.length > 0) {
       cache.set(cacheKey, result);
+      console.log(`[CACHED] ${cacheKey} — ${result.sources.length} fonte(s)`);
     }
 
     return res.json({ success: true, cached: false, ...result });
@@ -44,7 +53,18 @@ app.get('/extract', async (req, res) => {
   }
 });
 
+// POST /cache/clear — limpar cache
+app.post('/cache/clear', (req, res) => {
+  cache.flushAll();
+  res.json({ success: true, message: 'Cache limpo' });
+});
+
+// GET /cache/stats
+app.get('/cache/stats', (req, res) => {
+  res.json({ success: true, stats: cache.getStats() });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Streamflix Scraper rodando na porta ${PORT}`);
+  console.log(`\n🎬 Streamflix Scraper rodando na porta ${PORT}\n`);
 });
