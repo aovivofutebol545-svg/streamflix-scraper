@@ -1,0 +1,20 @@
+{
+  "name": "streamflix-scraper",
+  "version": "1.0.0",
+  "description": "Stream extractor — extrai links m3u8/mp4 diretos sem anúncios",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "install-browsers": "npx playwright install chromium --with-deps"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "playwright": "^1.44.0",
+    "cors": "^2.8.5",
+    "node-cache": "^5.1.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
